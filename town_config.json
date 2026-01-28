@@ -1,0 +1,111 @@
+{
+  "world": {
+    "time": {
+      "hour": 8,
+      "day": 1
+    },
+    "weather": "sunny",
+    "locations": {
+      "town_square": {
+        "type": "public",
+        "description": "Central meeting place"
+      },
+      "market": {
+        "type": "functional",
+        "description": "Trading and goods"
+      },
+      "tavern": {
+        "type": "functional",
+        "description": "Food, drink, and gossip"
+      },
+      "church": {
+        "type": "functional",
+        "description": "Prayer and community"
+      },
+      "house_1": {
+        "type": "residence",
+        "description": "Baker's home"
+      },
+      "house_2": {
+        "type": "residence",
+        "description": "Guard's home"
+      },
+      "house_3": {
+        "type": "residence",
+        "description": "Priest's quarters"
+      },
+      "house_4": {
+        "type": "residence",
+        "description": "Merchant's home"
+      },
+      "house_5": {
+        "type": "residence",
+        "description": "Farmer's cottage"
+      }
+    }
+  },
+  "npcs": {
+    "baker": {
+      "name": "Martha the Baker",
+      "personality": "cheerful, hardworking, loves to gossip",
+      "home": "house_1",
+      "location": "house_1",
+      "base_schedule": {
+        "6": "market",
+        "12": "tavern",
+        "13": "market",
+        "18": "house_1",
+        "22": "house_1"
+      }
+    },
+    "guard": {
+      "name": "Roland the Guard",
+      "personality": "serious, protective, dutiful",
+      "home": "house_2",
+      "location": "house_2",
+      "base_schedule": {
+        "7": "town_square",
+        "12": "town_square",
+        "19": "tavern",
+        "21": "house_2"
+      }
+    },
+    "priest": {
+      "name": "Father Benedict",
+      "personality": "wise, kind, spiritual",
+      "home": "house_3",
+      "location": "church",
+      "base_schedule": {
+        "6": "church",
+        "12": "town_square",
+        "13": "church",
+        "20": "house_3"
+      }
+    },
+    "merchant": {
+      "name": "Gregor the Merchant",
+      "personality": "shrewd, friendly, persuasive",
+      "home": "house_4",
+      "location": "house_4",
+      "base_schedule": {
+        "8": "market",
+        "12": "tavern",
+        "14": "market",
+        "19": "house_4"
+      }
+    },
+    "farmer": {
+      "name": "Tom the Farmer",
+      "personality": "simple, honest, quiet",
+      "home": "house_5",
+      "location": "house_5",
+      "base_schedule": {
+        "5": "market",
+        "12": "house_5",
+        "13": "market",
+        "18": "tavern",
+        "20": "house_5"
+      }
+    }
+  }
+}

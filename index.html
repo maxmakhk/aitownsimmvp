@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Town Simulator - MVP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .status-bar {
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-info {
+            display: flex;
+            gap: 30px;
+        }
+
+        #chatLog {
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            height: 500px;
+            overflow-y: auto;
+            padding: 18px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+        }
+
+        .log-time {
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        .log-movement {
+            color: #00aaff;
+        }
+
+
+        .log-interaction {
+            color: #ff00ff;
+        }
+
+        .log-system {
+            color: #ffffff;
+        }
+
+        .log-error {
+            color: #ff0000;
+        }
+
+        /* --- */
+
+        .log-action {
+            color: #00ff00;
+        }
+
+        .log-action .npc-name {
+            color: #00ddff;
+            font-weight: bold;
+        }
+
+        .log-action .npc-message {
+            color: #aaffaa;
+        }
+
+        .log-interaction .npc-name {
+            color: #ff66ff;
+            font-weight: bold;
+        }
+
+        .log-interaction .npc-message {
+            color: #ffaaff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #00ff00;
+            color: #0a0a0a;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #loadingIndicator {
+            display: none;
+            text-align: center;
+            color: #ffff00;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { content: '|'; }
+            25% { content: '/'; }
+            50% { content: '—'; }
+            75% { content: '\\'; }
+            100% { content: '|'; }
+        }
+
+        .spinner::after {
+            content: '|';
+        }
+
+        /* Scrollbar styling */
+        #chatLog::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #chatLog::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        #chatLog::-webkit-scrollbar-thumb {
+            background: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏘️ AI TOWN SIMULATOR - MVP</h1>
+        
+        <div class="status-bar">
+            <div class="status-info">
+                <div>⏰ <span id="timeDisplay">Day 1, 08:00</span></div>
+                <div>🌤️ <span id="weatherDisplay">Sunny</span></div>
+            </div>
+            <div>
+                <button id="nextHourBtn" onclick="runNextHour()">▶ Next Hour</button>
+            </div>
+        </div>
+
+        <div id="chatLog"></div>
+
+        <div class="controls">
+            <button onclick="initGame()">🔄 Reset Game</button>
+            <button onclick="clearLog()">🗑️ Clear Log</button>
+        </div>
+
+        <div id="loadingIndicator">
+            <span class="spinner"></span> AI Processing...
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = null;
+        let isProcessing = false;
+
+        // Initialize Game
+        async function initGame() {
+            log('system', '=== INITIALIZING GAME ===');
+            
+            try {
+                // Load configuration
+                const response = await fetch('town_config.json');
+                gameState = await response.json();
+                
+                // Copy base schedules to active schedules
+                for (let npcId in gameState.npcs) {
+                    gameState.npcs[npcId].active_schedule = {...gameState.npcs[npcId].base_schedule};
+                }
+                
+                log('system', `✓ Loaded ${Object.keys(gameState.npcs).length} NPCs`);
+                log('system', `✓ Loaded ${Object.keys(gameState.world.locations).length} locations`);
+                log('system', '✓ Game initialized successfully');
+                log('system', '');
+                
+                updateStatusBar();
+                logCurrentState();
+                
+            } catch (error) {
+                log('error', `Failed to initialize: ${error.message}`);
+            }
+        }
+
+        // Run Next Hour (Enhanced)
+async function runNextHour() {
+    if (!gameState) {
+        log('error', 'Please initialize game first!');
+        return;
+    }
+
+    if (isProcessing) {
+        return;
+    }
+
+    isProcessing = true;
+    document.getElementById('nextHourBtn').disabled = true;
+    document.getElementById('loadingIndicator').style.display = 'block';
+
+    const currentHour = gameState.world.time.hour;
+    const currentDay = gameState.world.time.day;
+
+    log('time', `\n⏰ Day ${currentDay}, ${currentHour}:00 (${gameState.world.weather})`);
+    log('system', '═'.repeat(60));
+
+    try {
+        // Step 1: Update NPC locations
+        await updateNPCLocations(currentHour);
+
+        // Step 2: Show current positions
+        showCurrentPositions();
+
+        // Step 3: Group NPCs by location
+        const locationGroups = groupNPCsByLocation();
+        
+        // Step 4: Show who is together
+        showGroupings(locationGroups);
+
+        // Step 5: Process AI actions
+        const scheduleChanges = await processNPCActions(locationGroups);
+
+        // Step 6: Narrator summarizes changes
+        narrateChanges(scheduleChanges);
+
+        // Step 7: Advance time
+        advanceTime();
+
+        log('system', '');
+
+    } catch (error) {
+        log('error', `Error during hour processing: ${error.message}`);
+    } finally {
+        isProcessing = false;
+        document.getElementById('nextHourBtn').disabled = false;
+        document.getElementById('loadingIndicator').style.display = 'none';
+        updateStatusBar();
+    }
+}
+
+// NEW: Show current positions
+function showCurrentPositions() {
+    log('system', '\n📍 [Current Positions]');
+    
+    // Group by location for display
+    const locationMap = {};
+    
+    for (let npcId in gameState.npcs) {
+        const npc = gameState.npcs[npcId];
+        const location = npc.location;
+        
+        if (!locationMap[location]) {
+            locationMap[location] = [];
+        }
+        locationMap[location].push(npc.name);
+    }
+    
+    // Display each location
+    for (let location in locationMap) {
+        const npcs = locationMap[location];
+        const locationDesc = gameState.world.locations[location].description;
+        log('system', `   ${location} (${locationDesc}): ${npcs.join(', ')}`);
+    }
+}
+
+// NEW: Show who is together
+function showGroupings(locationGroups) {
+    log('system', '\n👥 [Groupings]');
+    
+    let hasGroups = false;
+    
+    for (let location in locationGroups) {
+        const npcIds = locationGroups[location];
+        
+        if (npcIds.length > 1) {
+            hasGroups = true;
+            const npcNames = npcIds.map(id => gameState.npcs[id].name);
+            log('interaction', `   ✦ ${location}: ${npcNames.join(' & ')} are together`);
+        }
+    }
+    
+    if (!hasGroups) {
+        log('system', '   (All NPCs are alone at their locations)');
+    }
+}
+
+        // Update NPC Locations based on schedule
+        function updateNPCLocations(currentHour) {
+            log('system', '\n[Updating Locations]');
+
+            for (let npcId in gameState.npcs) {
+                const npc = gameState.npcs[npcId];
+                const schedule = npc.active_schedule;
+
+                if (schedule[currentHour]) {
+                    const newLocation = schedule[currentHour];
+                    const oldLocation = npc.location;
+
+                    if (newLocation !== oldLocation) {
+                        npc.location = newLocation;
+                        log('movement', `📍 ${npc.name} moved: ${oldLocation} → ${newLocation}`);
+                    }
+                }
+            }
+        }
+
+        // Group NPCs by their current location
+        function groupNPCsByLocation() {
+            const groups = {};
+
+            for (let npcId in gameState.npcs) {
+                const npc = gameState.npcs[npcId];
+                const location = npc.location;
+
+                if (!groups[location]) {
+                    groups[location] = [];
+                }
+                groups[location].push(npcId);
+            }
+
+            return groups;
+        }
+
+        // UPDATED: Process NPC actions and track changes
+async function processNPCActions(locationGroups) {
+    log('system', '\n🤖 [AI Processing]');
+    
+    const scheduleChanges = [];
+    let processedCount = 0;
+
+    for (let location in locationGroups) {
+        const npcIds = locationGroups[location];
+
+        if (npcIds.length === 1) {
+            // Solo NPC - only process if at important location or scheduled activity
+            if (shouldProcessSoloNPC(npcIds[0], location)) {
+                const changes = await processSoloNPC(npcIds[0], location);
+                if (changes) scheduleChanges.push(changes);
+                processedCount++;
+            }
+        } else {
+            // Multiple NPCs - ALWAYS process interactions
+            const changes = await processGroupInteraction(npcIds, location);
+            if (changes) scheduleChanges.push(...changes);
+            processedCount++;
+        }
+    }
+    
+    if (processedCount === 0) {
+        log('system', '   (Everyone quietly goes about their routine)');
+    }
+    
+    return scheduleChanges;
+}
+
+// NEW: Decide if solo NPC should generate dialogue
+function shouldProcessSoloNPC(npcId, location) {
+    const npc = gameState.npcs[npcId];
+    const hour = gameState.world.time.hour;
+    
+    // Always process if at functional building (not home)
+    const functionalLocations = ['market', 'tavern', 'church', 'town_square'];
+    if (functionalLocations.includes(location)) {
+        return true;
+    }
+    
+    // Process if just moved this hour (schedule change)
+    if (npc.active_schedule[hour] === location) {
+        return true;
+    }
+    
+    // 30% random chance for home activities
+    if (Math.random() < 0.3) {
+        return true;
+    }
+    
+    // Otherwise skip (NPC is quietly at home doing routine stuff)
+    return false;
+}
+
+        // UPDATED: Process solo NPC action with change detection
+        async function processSoloNPC(npcId, location) {
+            const npc = gameState.npcs[npcId];
+            const hour = gameState.world.time.hour;
+            const weather = gameState.world.weather;
+
+            const prompt = `You are ${npc.name}, currently at ${location}.
+        Personality: ${npc.personality}
+        Time: ${hour}:00
+        Weather: ${weather}
+
+        What are you doing right now? If you plan to do something later or go somewhere specific, mention it briefly. (1-2 sentences, first person)`;
+
+            try {
+                const action = await callOllamaAPI(prompt);
+                
+                // Create formatted log entry with separate name and message
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry log-action';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'npc-name';
+                nameSpan.textContent = `   ${npc.name}`;
+                
+                const messageSpan = document.createElement('span');
+                messageSpan.className = 'npc-message';
+                messageSpan.textContent = `: "${action}"`;
+                
+                logEntry.appendChild(nameSpan);
+                logEntry.appendChild(messageSpan);
+                
+                document.getElementById('chatLog').appendChild(logEntry);
+                document.getElementById('chatLog').scrollTop = document.getElementById('chatLog').scrollHeight;
+                
+                // Check for future plans in the response
+                return detectScheduleChange(npcId, action);
+                
+            } catch (error) {
+                log('error', `   Failed to get action for ${npc.name}: ${error.message}`);
+                return null;
+            }
+        }
+
+
+        // UPDATED: Process group interaction with change detection
+async function processGroupInteraction(npcIds, location) {
+    const npcNames = npcIds.map(id => gameState.npcs[id].name);
+    const npcPersonalities = npcIds.map(id => 
+        `${gameState.npcs[id].name} (${gameState.npcs[id].personality})`
+    ).join(', ');
+
+    const hour = gameState.world.time.hour;
+    const weather = gameState.world.weather;
+
+    const prompt = `NPCs meeting at ${location}:
+${npcPersonalities}
+
+Time: ${hour}:00
+Weather: ${weather}
+
+These NPCs encounter each other. Write a brief interaction showing what they do or discuss. If they make plans for later, include it. (2-4 lines of dialogue)
+
+Format as:
+[Name]: "dialogue"`;
+
+    try {
+        const interaction = await callOllamaAPI(prompt);
+        log('interaction', `   💬 At ${location}:`);
+        
+        // Split and display each line with formatted name/message
+        const lines = interaction.split('\n').filter(line => line.trim());
+        lines.forEach(line => {
+            const match = line.match(/\[?([^\]:]+)\]?:\s*"?(.+)"?/);
+            
+            if (match) {
+                const name = match[1].trim();
+                const message = match[2].trim().replace(/^"|"$/g, '');
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry log-interaction';
+                logEntry.style.marginLeft = '30px';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'npc-name';
+                nameSpan.textContent = name;
+                
+                const messageSpan = document.createElement('span');
+                messageSpan.className = 'npc-message';
+                messageSpan.textContent = `: "${message}"`;
+                
+                logEntry.appendChild(nameSpan);
+                logEntry.appendChild(messageSpan);
+                
+                document.getElementById('chatLog').appendChild(logEntry);
+            } else {
+                log('interaction', `      ${line}`);
+            }
+        });
+        
+        document.getElementById('chatLog').scrollTop = document.getElementById('chatLog').scrollHeight;
+        
+        // Check for plans made in the interaction
+        const changes = [];
+        npcIds.forEach(npcId => {
+            const change = detectScheduleChange(npcId, interaction);
+            if (change) changes.push(change);
+        });
+        
+        return changes;
+        
+    } catch (error) {
+        log('error', `   Failed group interaction at ${location}: ${error.message}`);
+        return [];
+    }
+}
+
+// NEW: Detect schedule changes from AI output
+function detectScheduleChange(npcId, text) {
+    const npc = gameState.npcs[npcId];
+    
+    // Simple keyword detection (can be enhanced)
+    const keywords = {
+        'later': 'plans something for later',
+        'tonight': 'plans something for tonight',
+        'tomorrow': 'plans something for tomorrow',
+        'meet': 'arranged a meeting',
+        "i'll": 'made a commitment',
+        'going to': 'intends to do something'
+    };
+    
+    const lowerText = text.toLowerCase();
+    
+    for (let keyword in keywords) {
+        if (lowerText.includes(keyword)) {
+            return {
+                npc: npc.name,
+                type: keywords[keyword],
+                details: text.substring(0, 100) // First 100 chars
+            };
+        }
+    }
+    
+    return null;
+}
+
+// NEW: Narrator describes changes
+function narrateChanges(scheduleChanges) {
+    if (!scheduleChanges || scheduleChanges.length === 0) {
+        log('system', '\n📖 [Narrator]');
+        log('system', '   The hour passes peacefully. Everyone continues their usual routines.');
+        return;
+    }
+    
+    log('system', '\n📖 [Narrator - Notable Events]');
+    
+    scheduleChanges.forEach(change => {
+        log('narrator', `   ✦ ${change.npc} ${change.type}`);
+    });
+}
+
+        // Call Ollama API
+        async function callOllamaAPI(prompt) {
+            const response = await fetch('http://localhost:11434/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'gemma3:4b',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are an NPC in a town simulation. Respond briefly and stay in character.'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    stream: false
+                })
+            });
+
+            const data = await response.json();
+            return data.message.content;
+        }
+
+        // Advance time
+        function advanceTime() {
+            gameState.world.time.hour += 1;
+
+            if (gameState.world.time.hour >= 24) {
+                gameState.world.time.hour = 0;
+                gameState.world.time.day += 1;
+                log('system', `\n🌅 New day begins: Day ${gameState.world.time.day}`);
+            }
+        }
+
+        // Log current state
+        function logCurrentState() {
+            log('system', '\n[Current Town State]');
+            for (let npcId in gameState.npcs) {
+                const npc = gameState.npcs[npcId];
+                log('system', `• ${npc.name} at ${npc.location}`);
+            }
+        }
+
+        // Update status bar
+        function updateStatusBar() {
+            if (!gameState) return;
+
+            const hour = String(gameState.world.time.hour).padStart(2, '0');
+            const day = gameState.world.time.day;
+            const weather = gameState.world.weather;
+
+            document.getElementById('timeDisplay').textContent = `Day ${day}, ${hour}:00`;
+            document.getElementById('weatherDisplay').textContent = weather.charAt(0).toUpperCase() + weather.slice(1);
+        }
+
+        // Logging function
+        function log(type, message) {
+            const chatLog = document.getElementById('chatLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            chatLog.appendChild(entry);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Clear log
+        function clearLog() {
+            document.getElementById('chatLog').innerHTML = '';
+        }
+
+        // Auto-initialize on load
+        window.onload = () => {
+            initGame();
+        };
+    </script>
+</body>
+</html>
