@@ -5,106 +5,212 @@
       "day": 1
     },
     "weather": "sunny",
+    "weather_options": ["sunny", "cloudy", "rainy", "foggy", "windy"],
+    "action_effects": {
+      "selling": {
+        "money": 30,
+        "food": 0,
+        "rest": 0
+      },
+      "shopping": {
+        "money": -20,
+        "food": 0,
+        "rest": 0
+      },
+      "browsing": {
+        "money": 0,
+        "food": 0,
+        "rest": 0
+      },
+      "eating": {
+        "money": -30,
+        "food": 50,
+        "rest": 0
+      },
+      "drinking": {
+        "money": -25,
+        "food": 30,
+        "rest": -5
+      },
+      "gossiping": {
+        "money": 0,
+        "food": 0,
+        "rest": 0
+      },
+      "praying": {
+        "money": 0,
+        "food": 0,
+        "rest": 15
+      },
+      "meditating": {
+        "money": 0,
+        "food": 0,
+        "rest": 20
+      },
+      "worshipping": {
+        "money": 0,
+        "food": 0,
+        "rest": 15
+      },
+      "resting": {
+        "money": 0,
+        "food": 0,
+        "rest": 25
+      },
+      "sleeping": {
+        "money": 0,
+        "food": 0,
+        "rest": 60
+      },
+      "reading": {
+        "money": 0,
+        "food": 0,
+        "rest": 10
+      },
+      "watching": {
+        "money": 0,
+        "food": 0,
+        "rest": 0
+      },
+      "talking": {
+        "money": 0,
+        "food": 0,
+        "rest": 0
+      },
+      "meeting": {
+        "money": 0,
+        "food": 0,
+        "rest": 0
+      }
+    },
     "locations": {
       "town_square": {
         "type": "public",
-        "description": "Central meeting place"
+        "description": "Central meeting place",
+        "emoji": "🏛️",
+        "actions": ["talking", "watching", "meeting"]
       },
       "market": {
         "type": "functional",
-        "description": "Trading and goods"
+        "description": "Trading and goods",
+        "emoji": "🏪",
+        "actions": ["shopping", "selling", "browsing"]
       },
       "tavern": {
         "type": "functional",
-        "description": "Food, drink, and gossip"
+        "description": "Food, drink, and gossip",
+        "emoji": "🍺",
+        "actions": ["eating", "drinking", "gossiping"]
       },
       "church": {
         "type": "functional",
-        "description": "Prayer and community"
+        "description": "Prayer and community",
+        "emoji": "⛪",
+        "actions": ["praying", "meditating", "worshipping"]
       },
       "house_1": {
         "type": "residence",
-        "description": "Baker's home"
+        "description": "Baker's home",
+        "emoji": "🏠",
+        "actions": ["resting", "sleeping", "reading"]
       },
       "house_2": {
         "type": "residence",
-        "description": "Guard's home"
+        "description": "Guard's home",
+        "emoji": "🏠",
+        "actions": ["resting", "sleeping", "reading"]
       },
       "house_3": {
         "type": "residence",
-        "description": "Priest's quarters"
+        "description": "Priest's quarters",
+        "emoji": "🏠",
+        "actions": ["resting", "sleeping", "reading"]
       },
       "house_4": {
         "type": "residence",
-        "description": "Merchant's home"
+        "description": "Merchant's home",
+        "emoji": "🏠",
+        "actions": ["resting", "sleeping", "reading"]
       },
       "house_5": {
         "type": "residence",
-        "description": "Farmer's cottage"
+        "description": "Farmer's cottage",
+        "emoji": "🏠",
+        "actions": ["resting", "sleeping", "reading"]
       }
     }
   },
   "npcs": {
     "baker": {
       "name": "Martha the Baker",
+      "emoji": "👩‍🍳",
       "personality": "cheerful, hardworking, loves to gossip",
+      "friends": [],
       "home": "house_1",
       "location": "house_1",
       "base_schedule": {
-        "6": "market",
-        "12": "tavern",
-        "13": "market",
-        "18": "house_1",
-        "22": "house_1"
+        "6": ["market", "selling"],
+        "12": ["tavern", "eating"],
+        "13": ["market", "selling"],
+        "18": ["house_1", "resting"],
+        "22": ["house_1", "sleeping"]
       }
     },
     "guard": {
       "name": "Roland the Guard",
+      "emoji": "💂",
       "personality": "serious, protective, dutiful",
+      "friends": [],
       "home": "house_2",
       "location": "house_2",
       "base_schedule": {
-        "7": "town_square",
-        "12": "town_square",
-        "19": "tavern",
-        "21": "house_2"
+        "7": ["town_square", "watching"],
+        "12": ["town_square", "watching"],
+        "19": ["tavern", "drinking"],
+        "21": ["house_2", "sleeping"]
       }
     },
     "priest": {
       "name": "Father Benedict",
+      "emoji": "🧙‍♂️",
       "personality": "wise, kind, spiritual",
+      "friends": [],
       "home": "house_3",
       "location": "church",
       "base_schedule": {
-        "6": "church",
-        "12": "town_square",
-        "13": "church",
-        "20": "house_3"
+        "6": ["church", "praying"],
+        "12": ["town_square", "talking"],
+        "13": ["church", "worshipping"],
+        "20": ["house_3", "resting"]
       }
     },
     "merchant": {
       "name": "Gregor the Merchant",
+      "emoji": "🧔",
       "personality": "shrewd, friendly, persuasive",
+      "friends": [],
       "home": "house_4",
       "location": "house_4",
       "base_schedule": {
-        "8": "market",
-        "12": "tavern",
-        "14": "market",
-        "19": "house_4"
+        "8": ["market", "selling"],
+        "12": ["tavern", "eating"],
+        "14": ["market", "shopping"],
+        "19": ["house_4", "resting"]
       }
     },
     "farmer": {
       "name": "Tom the Farmer",
+      "emoji": "👨‍🌾",
       "personality": "simple, honest, quiet",
+      "friends": [],
       "home": "house_5",
       "location": "house_5",
       "base_schedule": {
-        "5": "market",
-        "12": "house_5",
-        "13": "market",
-        "18": "tavern",
-        "20": "house_5"
+        "5": ["market", "selling"],
+        "12": ["house_5", "resting"],
+        "13": ["market", "browsing"],
+        "18": ["tavern", "drinking"],
+        "20": ["house_5", "sleeping"]
       }
     }
   }

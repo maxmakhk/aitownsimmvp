@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Town Simulator - MVP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="A cyberpunk-inspired host life simulator exploring relationships and daily interactions">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Insiders">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="images/icon/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="images/icon/favicon.ico">
+    <link rel="apple-touch-icon" href="images/icon/apple-touch-icon.png">
+    <title>Insiders</title>
     <style>
         * {
             margin: 0;
@@ -11,11 +20,16 @@
             box-sizing: border-box;
         }
 
+        html {
+            overflow-y: scroll;
+        }
+
         body {
             font-family: 'Courier New', monospace;
             background: #1a1a1a;
             color: #00ff00;
-            padding: 20px;
+            padding: 0;
+            scrollbar-gutter: stable;
         }
 
         .container {
@@ -23,9 +37,63 @@
             margin: 0 auto;
         }
 
+        .settings-button {
+            position: fixed;
+            top: 4px;
+            left: 4px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 64px;
+            left: 16px;
+            width: 220px;
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            padding: 12px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .settings-panel h3 {
+            margin-bottom: 5px;
+            color: #00ff00;
+            font-size: 14px;
+        }
+
+        .settings-panel label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .settings-panel select {
+            width: 100%;
+            margin-bottom: 5px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 6px;
+            font-family: 'Courier New', monospace;
+        }
+
         h1 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             color: #00ff00;
             text-shadow: 0 0 10px #00ff00;
         }
@@ -33,8 +101,8 @@
         .status-bar {
             background: #0a0a0a;
             border: 2px solid #00ff00;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 8px;
+            margin-bottom: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -42,7 +110,186 @@
 
         .status-info {
             display: flex;
-            gap: 30px;
+            gap: 15px;
+        }
+
+        .townview-box {
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            padding: 2px;
+            margin-bottom: 5px;
+            overflow-x: auto;
+        }
+
+        .townview-title {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .townview-locations {
+            display: flex;
+            gap: 2px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-bar {
+            background: #0a0a0a;
+            border: 2px solid #00ff00;
+            padding: 12px;
+            margin-bottom: 0;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        .action-bar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .action-bar-info {
+            flex: 1;
+            color: #00ff00;
+            font-size: 12px;
+        }
+
+        .action-bar-nav {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-btn {
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .player-emoji-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 5px;
+        }
+
+        .player-emoji-row .npc-emoji {
+            font-size: 22px;
+            border: 1px solid #00ff00;
+            border-radius: 6px;
+            padding: 4px 6px;
+            cursor: pointer;
+        }
+
+        .player-emoji-row .npc-emoji:hover {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .player-emoji-row .npc-emoji.selected {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .icon-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .icon-btn:hover {
+            background: #003300;
+        }
+
+        .icon-btn.selected {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .icon-btn-label {
+            font-size: 9px;
+            margin-top: 3px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-buttons button.active {
+            background: #00ff00;
+            color: #0a0a0a;
+        }
+
+        .location-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 44px;
+            padding: 1px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+
+        .location-emoji {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .location-name {
+            font-size: 10px;
+            color: #00ff00;
+            text-align: center;
+            margin-bottom: 3px;
+        }
+
+        .location-npcs {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .npc-emoji {
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .npc-emoji:hover {
+            transform: scale(1.3);
         }
 
         #chatLog {
@@ -50,14 +297,20 @@
             border: 2px solid #00ff00;
             height: 500px;
             overflow-y: auto;
-            padding: 18px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            overflow-x: hidden;
+            padding: 8px;
+            margin-bottom: 5px;
+            font-size: 16px;
             line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .log-entry {
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .log-time {
@@ -108,8 +361,14 @@
 
         .controls {
             display: flex;
-            gap: 10px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .controls button {
+            width: 100%;
+            text-align: center;
         }
 
         button {
@@ -136,9 +395,16 @@
 
         #loadingIndicator {
             display: none;
-            text-align: center;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #0a0a0a;
+            border: 2px solid #ffff00;
+            padding: 10px 15px;
+            border-radius: 6px;
             color: #ffff00;
-            margin-top: 10px;
+            z-index: 999;
+            font-size: 12px;
         }
 
         .spinner {
@@ -174,23 +440,49 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏘️ AI TOWN SIMULATOR - MVP</h1>
+        <button class="settings-button" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Settings</h3>
+            <label for="npcLanguageSelect">NPC Language</label>
+            <select id="npcLanguageSelect" onchange="onLanguageSelect()">
+                <option value="en">English</option>
+                <option value="zh-TW">Traditional Chinese</option>
+            </select>
+            <div class="controls">
+                <button id="installBtn" onclick="installApp()" style="display: none;">📱 Add to Home Screen</button>
+                <button onclick="initGame()">🔄 Reset Game</button>
+                <button onclick="clearLog()">🗑️ Clear Log</button>
+            </div>
+        </div>
+
+        <h1>INSIDERS</h1>
         
         <div class="status-bar">
             <div class="status-info">
                 <div>⏰ <span id="timeDisplay">Day 1, 08:00</span></div>
                 <div>🌤️ <span id="weatherDisplay">Sunny</span></div>
             </div>
-            <div>
-                <button id="nextHourBtn" onclick="runNextHour()">▶ Next Hour</button>
-            </div>
+        </div>
+
+        <div class="townview-box">
+            <div class="townview-title">🗺️ TOWN VIEW</div>
+            <div class="townview-locations" id="townviewLocations"></div>
         </div>
 
         <div id="chatLog"></div>
 
-        <div class="controls">
-            <button onclick="initGame()">🔄 Reset Game</button>
-            <button onclick="clearLog()">🗑️ Clear Log</button>
+        <div class="action-bar" id="actionBar">
+            <div class="action-bar-header">
+                <div class="action-bar-info" id="actionBarInfo">all npc processing automatically</div>
+                <div class="action-bar-nav">
+                    <button class="nav-btn" id="backBtn" onclick="handleBack()" style="display: none;">◀</button>
+                    <button class="nav-btn" id="cancelBtn" onclick="handleCancel()" style="display: none;">❌</button>
+                    <button class="nav-btn" id="nextHourBtn" onclick="runNextHourPlayer()">⏭️ Next Hour</button>
+                </div>
+            </div>
+            <div class="player-emoji-row" id="playerEmojiRow" style="display: none;"></div>
+            <div class="icon-grid" id="placeGrid" style="display: none;"></div>
+            <div class="icon-grid" id="actionGrid" style="display: none;"></div>
         </div>
 
         <div id="loadingIndicator">
@@ -202,8 +494,27 @@
         // Game State
         let gameState = null;
         let isProcessing = false;
+        let playerAction = { npcId: null, location: null, action: null, pending: false };
+
+        // Ability Values
+        const ABILITY_LIMITS = {
+            rest: 100,
+            food: 100,
+            money: 9999
+        };
+
+        const HOURLY_DECAY = {
+            rest: 7,
+            food: 10
+        };
 
         // Initialize Game
+        // Parse URL parameters
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
         async function initGame() {
             log('system', '=== INITIALIZING GAME ===');
             
@@ -212,17 +523,44 @@
                 const response = await fetch('town_config.json');
                 gameState = await response.json();
                 
+                // Random weather for initial day
+                const weatherOptions = gameState.world.weather_options || ['sunny', 'cloudy', 'rainy'];
+                gameState.world.weather = weatherOptions[Math.floor(Math.random() * weatherOptions.length)];
+
+                // Default NPC language
+                if (!gameState.world.npc_language) {
+                    gameState.world.npc_language = 'en';
+                }
+
+                // Check URL parameter for language setting
+                const languageParam = getURLParameter('language');
+                if (languageParam) {
+                    if (languageParam.toLowerCase() === 'chinese') {
+                        gameState.world.npc_language = 'zh-TW';
+                        log('system', '✓ Language set to Traditional Chinese from URL');
+                    } else if (languageParam.toLowerCase() === 'english') {
+                        gameState.world.npc_language = 'en';
+                        log('system', '✓ Language set to English from URL');
+                    }
+                }
+                
                 // Copy base schedules to active schedules
                 for (let npcId in gameState.npcs) {
                     gameState.npcs[npcId].active_schedule = {...gameState.npcs[npcId].base_schedule};
+                    ensureAbilityValues(gameState.npcs[npcId]);
+                    ensureFriends(gameState.npcs[npcId]);
                 }
                 
                 log('system', `✓ Loaded ${Object.keys(gameState.npcs).length} NPCs`);
                 log('system', `✓ Loaded ${Object.keys(gameState.world.locations).length} locations`);
+                log('system', `✓ Initial weather: ${gameState.world.weather}`);
                 log('system', '✓ Game initialized successfully');
                 log('system', '');
                 
                 updateStatusBar();
+                updateTownView();
+                updateActionBar();
+                updateLanguageSelect();
                 logCurrentState();
                 
             } catch (error) {
@@ -242,7 +580,8 @@ async function runNextHour() {
     }
 
     isProcessing = true;
-    document.getElementById('nextHourBtn').disabled = true;
+    const nextHourBtn = document.getElementById('nextHourBtn');
+    if (nextHourBtn) nextHourBtn.disabled = true;
     document.getElementById('loadingIndicator').style.display = 'block';
 
     const currentHour = gameState.world.time.hour;
@@ -255,22 +594,28 @@ async function runNextHour() {
         // Step 1: Update NPC locations
         await updateNPCLocations(currentHour);
 
-        // Step 2: Show current positions
+        // Step 1.5: Refresh town view before AI prompts
+        updateTownView();
+
+        // Step 2: Update abilities based on location + hourly decay
+        updateNPCAbilities();
+
+        // Step 3: Show current positions
         showCurrentPositions();
 
-        // Step 3: Group NPCs by location
+        // Step 4: Group NPCs by location
         const locationGroups = groupNPCsByLocation();
         
-        // Step 4: Show who is together
+        // Step 5: Show who is together
         showGroupings(locationGroups);
 
-        // Step 5: Process AI actions
-        const scheduleChanges = await processNPCActions(locationGroups);
+        // Step 6: Process AI actions
+        await processNPCActions(locationGroups);
 
-        // Step 6: Narrator summarizes changes
-        narrateChanges(scheduleChanges);
+        // Step 7: Decide next-hour activity based on ability values
+        await decideNextHourActivities(currentHour);
 
-        // Step 7: Advance time
+        // Step 9: Advance time
         advanceTime();
 
         log('system', '');
@@ -279,10 +624,17 @@ async function runNextHour() {
         log('error', `Error during hour processing: ${error.message}`);
     } finally {
         isProcessing = false;
-        document.getElementById('nextHourBtn').disabled = false;
+        if (nextHourBtn) nextHourBtn.disabled = false;
         document.getElementById('loadingIndicator').style.display = 'none';
         updateStatusBar();
+        updateTownView();
     }
+}
+
+// Run next hour (apply player action, then advance one hour)
+async function runNextHourPlayer() {
+    if (isProcessing) return;
+    await runNextHour();
 }
 
 // NEW: Show current positions
@@ -305,8 +657,15 @@ function showCurrentPositions() {
     // Display each location
     for (let location in locationMap) {
         const npcs = locationMap[location];
-        const locationDesc = gameState.world.locations[location].description;
+        const locationDesc = gameState.world.locations[location]?.description || 'Unknown place';
         log('system', `   ${location} (${locationDesc}): ${npcs.join(', ')}`);
+    }
+
+    log('system', '\n📊 [Ability Values]');
+    for (let npcId in gameState.npcs) {
+        const npc = gameState.npcs[npcId];
+        const abilities = npc.abilities;
+        log('system', `   ${npc.name} | rest ${abilities.rest}/${ABILITY_LIMITS.rest} | food ${abilities.food}/${ABILITY_LIMITS.food} | money ${abilities.money}/${ABILITY_LIMITS.money}`);
     }
 }
 
@@ -340,15 +699,288 @@ function showGroupings(locationGroups) {
                 const schedule = npc.active_schedule;
 
                 if (schedule[currentHour]) {
-                    const newLocation = schedule[currentHour];
+                    const scheduleEntry = schedule[currentHour];
+                    // Handle both old format (string) and new format (array)
+                    const newLocation = Array.isArray(scheduleEntry) ? scheduleEntry[0] : scheduleEntry;
+                    const newAction = Array.isArray(scheduleEntry) ? scheduleEntry[1] : null;
                     const oldLocation = npc.location;
 
                     if (newLocation !== oldLocation) {
                         npc.location = newLocation;
+                        npc.currentAction = newAction || 'routine';
                         log('movement', `📍 ${npc.name} moved: ${oldLocation} → ${newLocation}`);
+                    } else if (newAction) {
+                        npc.currentAction = newAction;
                     }
                 }
             }
+        }
+
+        // Ability initialization
+        function ensureAbilityValues(npc) {
+            if (!npc.abilities) {
+                npc.abilities = { rest: 100, food: 80, money: 0 };
+            }
+            clampAbilities(npc.abilities);
+        }
+
+        function ensureFriends(npc) {
+            if (!npc.friends) {
+                npc.friends = [];
+            }
+        }
+
+        function clampAbilities(abilities) {
+            abilities.rest = Math.max(0, Math.min(ABILITY_LIMITS.rest, abilities.rest));
+            abilities.food = Math.max(0, Math.min(ABILITY_LIMITS.food, abilities.food));
+            abilities.money = Math.max(0, Math.min(ABILITY_LIMITS.money, abilities.money));
+        }
+
+        function applyHourlyDecay(abilities) {
+            abilities.rest -= HOURLY_DECAY.rest;
+            abilities.food -= HOURLY_DECAY.food;
+            clampAbilities(abilities);
+        }
+
+        function applyLocationEffects(npc) {
+            // Apply action effects
+            const action = npc.currentAction || 'routine';
+            const actionEffects = getActionEffects(action);
+            
+            if (actionEffects.rest) {
+                npc.abilities.rest += actionEffects.rest;
+            }
+            if (actionEffects.food) {
+                npc.abilities.food += actionEffects.food;
+            }
+            if (actionEffects.money) {
+                npc.abilities.money += actionEffects.money;
+            }
+
+            clampAbilities(npc.abilities);
+        }
+
+        function getActionEffects(action) {
+            if (!gameState || !gameState.world.action_effects) {
+                return {};
+            }
+            return gameState.world.action_effects[action] || {};
+        }
+
+        function getLocationEffects(location, homeLocation) {
+            // Deprecated: effects are now in action_effects
+            return {};
+        }
+
+        function updateNPCAbilities() {
+            log('system', '\n[Updating Ability Values]');
+            for (let npcId in gameState.npcs) {
+                const npc = gameState.npcs[npcId];
+                ensureAbilityValues(npc);
+                applyHourlyDecay(npc.abilities);
+                applyLocationEffects(npc);
+            }
+        }
+
+        // Decide next hour based on ability values and base schedule
+        async function decideNextHourActivities(currentHour) {
+            const nextHour = (currentHour + 1) % 24;
+            const decisions = [];
+
+            for (let npcId in gameState.npcs) {
+                const npc = gameState.npcs[npcId];
+                ensureAbilityValues(npc);
+
+                if (playerAction.pending && playerAction.npcId === npcId && playerAction.location && playerAction.action) {
+                    npc.active_schedule[nextHour] = [playerAction.location, playerAction.action];
+                    decisions.push({
+                        name: npc.name,
+                        chosen: playerAction.location,
+                        action: [playerAction.action, 'player choice'],
+                        reasons: ['player choice'],
+                        groupWith: []
+                    });
+                    playerAction.pending = false;
+                    playerAction.location = null;
+                    playerAction.action = null;
+                    actionStep = 'auto';
+                    updateActionBar();
+                    continue;
+                }
+
+                const forcedPlan = getForcedPlan(npc, nextHour);
+                if (forcedPlan) {
+                    const forcedAction = forcedPlan.action || getActionForLocation(forcedPlan.location);
+                    npc.active_schedule[nextHour] = [forcedPlan.location, forcedAction];
+                    const groupWith = (forcedPlan.members || [])
+                        .map(id => gameState.npcs[id]?.name)
+                        .filter(name => name && name !== npc.name);
+                    decisions.push({
+                        name: npc.name,
+                        chosen: forcedPlan.location,
+                        action: [forcedAction, forcedPlan.reason],
+                        reasons: ['group plan', forcedPlan.reason],
+                        groupWith
+                    });
+                    continue;
+                }
+
+                const baseScheduleEntry = npc.base_schedule[nextHour] || npc.location;
+                // Handle both old format (string) and new format (array)
+                const baseLocation = Array.isArray(baseScheduleEntry) ? baseScheduleEntry[0] : baseScheduleEntry;
+                const baseAction = Array.isArray(baseScheduleEntry) ? baseScheduleEntry[1] : null;
+                const homeLocation = npc.home;
+                const tavernLocation = 'tavern';
+                const workingLocation = getWorkingLocation();
+
+                const options = [];
+                options.push({ location: baseLocation, weight: 100, reasons: ['schedule'] });
+
+                const restNeed = Math.max(0, 50 - npc.abilities.rest);
+                if (restNeed > 0) {
+                    options.push({
+                        location: homeLocation,
+                        weight: (restNeed / 50) * 100,
+                        reasons: ['sleepy']
+                    });
+                }
+
+                const hungerNeed = Math.max(0, 50 - npc.abilities.food);
+                if (hungerNeed > 0) {
+                    options.push({
+                        location: tavernLocation,
+                        weight: (hungerNeed / 50) * 100,
+                        reasons: ['hungry']
+                    });
+                }
+
+                if (hungerNeed > 0 && npc.abilities.money < 50) {
+                    options.push({
+                        location: workingLocation,
+                        weight: (hungerNeed / 50) * 100,
+                        reasons: ['hungry', 'poor']
+                    });
+                }
+
+                const decision = await weightedChoice(npc, nextHour, options);
+                console.log(`Decided for ${npc.name} at hour ${nextHour}:`, decision.weights, '→', decision.chosen);
+                // Store as array with location and action (use base action if available)
+                const actionForSchedule = baseAction || getActionForLocation(decision.chosen);
+                npc.active_schedule[nextHour] = [decision.chosen, actionForSchedule];
+                decisions.push({
+                    name: npc.name,
+                    chosen: decision.chosen,
+                    action: [actionForSchedule, decision.reasons[0]],
+                    reasons: decision.reasons,
+                    groupWith: []
+                });
+            }
+
+            await narrateDecisions(nextHour, decisions);
+        }
+
+        async function weightedChoice(npc, nextHour, options) {
+            const merged = mergeOptions(options);
+            const entries = Object.entries(merged)
+                .filter(([, data]) => data.weight > 0)
+                .map(([location, data]) => ({ location, ...data }));
+
+            const total = entries.reduce((sum, item) => sum + item.weight, 0);
+            let roll = Math.random() * total;
+            let chosen = entries.length ? entries[0].location : null;
+            let chosenReasons = [];
+
+            for (let item of entries) {
+                roll -= item.weight;
+                if (roll <= 0) {
+                    chosen = item.location;
+                    chosenReasons = item.reasons;
+                    break;
+                }
+            }
+
+            const weights = entries.reduce((map, item) => {
+                map[item.location] = item.weight;
+                return map;
+            }, {});
+
+            return { chosen, reasons: chosenReasons, weights };
+        }
+
+        function getForcedPlan(npc, nextHour) {
+            if (!npc.forced_plans || npc.forced_plans.length === 0) return null;
+            const index = npc.forced_plans.findIndex(plan => plan.hour === nextHour);
+            if (index === -1) return null;
+            const plan = npc.forced_plans[index];
+            npc.forced_plans.splice(index, 1);
+            return plan;
+        }
+
+        function mergeOptions(options) {
+            const merged = {};
+            options.forEach(option => {
+                if (!merged[option.location]) {
+                    merged[option.location] = { weight: 0, reasons: [] };
+                }
+                merged[option.location].weight += option.weight;
+                merged[option.location].reasons = Array.from(new Set([
+                    ...merged[option.location].reasons,
+                    ...option.reasons
+                ]));
+            });
+            return merged;
+        }
+
+        function getActionDetail(location, primaryReason) {
+            if (location === getWorkingLocation()) {
+                return ['working', 'earning money'];
+            }
+            if (location === 'tavern') {
+                return ['eating', 'buying food'];
+            }
+            if (location === 'church') {
+                return ['praying', 'seeking guidance'];
+            }
+            if (location === 'market') {
+                return ['shopping', 'browsing goods'];
+            }
+            return location ? ['resting', 'following routine'] : ['waiting', 'undecided'];
+        }
+
+        async function narrateDecisions(nextHour, decisions) {
+            if (!decisions.length) return;
+
+            const lines = decisions.map(d => {
+                const withGroup = d.groupWith && d.groupWith.length ? ` with ${d.groupWith.join(' & ')}` : '';
+                const actionText = d.action ? `["${d.action[0]}","${d.action[1]}"]` : '["routine","schedule"]';
+                return `- ${d.name} | action: ${actionText} at ${d.chosen}${withGroup} | reasons: ${d.reasons.join(', ') || 'schedule'}`;
+            }).join('\n');
+
+            const prompt = `Write a short narrator conclusion about today in exactly two sentences.
+No preface, no explanations, no translations, no pinyin.
+Use the list below (who + action + reasons). Keep action phrases intact.
+${lines}
+Tone: short, neutral, and in-world.`;
+            const promptWithLanguage = `${prompt}
+${getLanguageInstruction()}`;
+
+            try {
+                const narration = await callOllamaAPI(promptWithLanguage);
+                log('system', '\n📖 [Today\'s Summary]');
+                const rawLines = narration.split('\n').map(line => line.trim()).filter(Boolean);
+                const summary = rawLines.join(' ').replace(/\s+/g, ' ').trim();
+                log('system', `   ${summary}`);
+            } catch (error) {
+                log('error', `   Failed to narrate decisions: ${error.message}`);
+            }
+        }
+
+        function getWorkingLocation() {
+            if (gameState.world.locations.market) return 'market';
+            if (gameState.world.locations.town_square) return 'town_square';
+
+            const firstLocation = Object.keys(gameState.world.locations)[0];
+            return firstLocation || 'town_square';
         }
 
         // Group NPCs by their current location
@@ -368,11 +1000,88 @@ function showGroupings(locationGroups) {
             return groups;
         }
 
+        // Get default action for a location
+        function getActionForLocation(location) {
+            if (!gameState || !gameState.world.locations[location]) {
+                return 'routine';
+            }
+            const loc = gameState.world.locations[location];
+            if (loc.actions && loc.actions.length > 0) {
+                return loc.actions[0]; // Default to first action
+            }
+            // Fallback based on location type
+            if (location.includes('house')) return 'resting';
+            if (location === 'tavern') return 'eating';
+            if (location === 'market') return 'shopping';
+            if (location === 'church') return 'praying';
+            if (location === 'town_square') return 'talking';
+            return 'routine';
+        }
+
+        function findNpcIdByName(name) {
+            const target = name.toLowerCase();
+            for (let npcId in gameState.npcs) {
+                const full = gameState.npcs[npcId].name.toLowerCase();
+                const first = full.split(' ')[0];
+                if (full === target || first === target || full.includes(target)) {
+                    return npcId;
+                }
+            }
+            return null;
+        }
+
+        function getFriendEntry(npc, otherNpcName) {
+            ensureFriends(npc);
+            let friend = npc.friends.find(f => f.name.toLowerCase() === otherNpcName.toLowerCase());
+            if (!friend) {
+                friend = {
+                    name: otherNpcName,
+                    relationshipMark: 0,
+                    tag: []
+                };
+                npc.friends.push(friend);
+            }
+            return friend;
+        }
+
+        function updateFriendTags(friend) {
+            const statusTags = ['friendly', 'close', 'unfriendly', 'hostile', 'neutral'];
+            const baseTags = (friend.tag || []).filter(t => !statusTags.includes(t));
+            let status = null;
+            if (friend.relationshipMark >= 6) status = 'close';
+            else if (friend.relationshipMark >= 3) status = 'friendly';
+            else if (friend.relationshipMark <= -6) status = 'hostile';
+            else if (friend.relationshipMark <= -3) status = 'unfriendly';
+            else status = null;
+
+            friend.tag = status ? [...new Set([...baseTags, status])] : baseTags;
+        }
+
+        function scoreSentiment(message) {
+            const text = message.toLowerCase();
+            const positive = ['thanks', 'thank', 'good', 'great', 'nice', 'love', 'friend', 'help', 'happy', 'welcome', 'glad', 'appreciate'];
+            const negative = ['hate', 'angry', 'bad', 'annoy', 'stupid', 'idiot', 'rude', 'fight', 'argue', 'upset', 'insult'];
+            let score = 0;
+            positive.forEach(word => { if (text.includes(word)) score += 1; });
+            negative.forEach(word => { if (text.includes(word)) score -= 1; });
+            if (text.includes('sorry')) score += 1;
+            return Math.max(-2, Math.min(2, score));
+        }
+
+        function updateFriendshipBetween(npcId, otherNpcId, delta) {
+            const npc = gameState.npcs[npcId];
+            const other = gameState.npcs[otherNpcId];
+            if (!npc || !other) return;
+
+            const friend = getFriendEntry(npc, other.name);
+            friend.relationshipMark += delta;
+            updateFriendTags(friend);
+        }
+
         // UPDATED: Process NPC actions and track changes
-async function processNPCActions(locationGroups) {
-    log('system', '\n🤖 [AI Processing]');
+        async function processNPCActions(locationGroups) {
+    log('system', '\n🤖 [NPC Processing]');
     
-    const scheduleChanges = [];
     let processedCount = 0;
 
     for (let location in locationGroups) {
@@ -381,15 +1090,15 @@ async function processNPCActions(locationGroups) {
         if (npcIds.length === 1) {
             // Solo NPC - only process if at important location or scheduled activity
             if (shouldProcessSoloNPC(npcIds[0], location)) {
-                const changes = await processSoloNPC(npcIds[0], location);
-                if (changes) scheduleChanges.push(changes);
+                await processSoloNPC(npcIds[0], location);
                 processedCount++;
+                updateTownView();
             }
         } else {
             // Multiple NPCs - ALWAYS process interactions
-            const changes = await processGroupInteraction(npcIds, location);
-            if (changes) scheduleChanges.push(...changes);
+            await processGroupInteraction(npcIds, location);
             processedCount++;
+            updateTownView();
         }
     }
     
@@ -397,7 +1106,6 @@ async function processNPCActions(locationGroups) {
         log('system', '   (Everyone quietly goes about their routine)');
     }
     
-    return scheduleChanges;
 }
 
 // NEW: Decide if solo NPC should generate dialogue
@@ -412,7 +1120,9 @@ function shouldProcessSoloNPC(npcId, location) {
     }
     
     // Process if just moved this hour (schedule change)
-    if (npc.active_schedule[hour] === location) {
+    const scheduleEntry = npc.active_schedule[hour];
+    const scheduleLocation = Array.isArray(scheduleEntry) ? scheduleEntry[0] : scheduleEntry;
+    if (scheduleLocation === location) {
         return true;
     }
     
@@ -430,22 +1140,30 @@ function shouldProcessSoloNPC(npcId, location) {
             const npc = gameState.npcs[npcId];
             const hour = gameState.world.time.hour;
             const weather = gameState.world.weather;
+            const currentAction = npc.currentAction || getActionForLocation(location);
 
             const prompt = `You are ${npc.name}, currently at ${location}.
         Personality: ${npc.personality}
         Time: ${hour}:00
         Weather: ${weather}
+        Current action: ${currentAction}
 
-        What are you doing right now? If you plan to do something later or go somewhere specific, mention it briefly. (1-2 sentences, first person)`;
+            ${getLanguageInstruction()}
+
+            No explanations, no translations, no pinyin.
+
+        What are you doing while ${currentAction}? If you plan to do something later or go somewhere specific, mention it briefly. (1-2 sentences, first person)`;
 
             try {
                 const action = await callOllamaAPI(prompt);
                 
-                // Add location header like group interactions
-                log('interaction', `   💬 At ${location}:`);
-                logNPCDialogue(npc.name, action, 'interaction', '      ');  // Extra indent for consistency
+                    // Add location header
+                    const locationEmoji = gameState.world.locations[location]?.emoji || '🏛️';
+                    log('interaction', `   💬 At ${locationEmoji} ${location}:`);
                 
-                return detectScheduleChange(npcId, action);
+                    logNPCDialogue(npc.name, action, currentAction, 'interaction', '      ');
+                
+                return;
             } catch (error) {
                 log('error', `   Failed to get action for ${npc.name}: ${error.message}`);
                 return null;
@@ -453,18 +1171,33 @@ function shouldProcessSoloNPC(npcId, location) {
         }
 
         // Helper to create formatted NPC dialogue entry
-function logNPCDialogue(npcName, message, type = 'interaction', marginLeft = '30px') {
+function logNPCDialogue(npcName, message, action = null, type = 'interaction', marginLeft = '30px') {
     const logEntry = document.createElement('div');
     logEntry.className = `log-entry log-${type}`;
     logEntry.style.marginLeft = '30px';
     
+    // Find NPC emoji
+    let npcEmoji = '';
+    for (let npcId in gameState.npcs) {
+        if (gameState.npcs[npcId].name === npcName) {
+            npcEmoji = gameState.npcs[npcId].emoji || '';
+            break;
+        }
+    }
+    
     const nameSpan = document.createElement('span');
     nameSpan.className = 'npc-name';
-    nameSpan.textContent = npcName;
+    nameSpan.textContent = (npcEmoji ? npcEmoji + ' ' : '') + npcName;
     
     const messageSpan = document.createElement('span');
     messageSpan.className = 'npc-message';
-    messageSpan.textContent = `: "${message}"`;
+    if (action) {
+        // Format: "👩‍🍳 Martha the Baker is selling: message"
+        const actionText = action.charAt(0).toUpperCase() + action.slice(1);
+        messageSpan.textContent = ` is ${action}: "${message}"`;
+    } else {
+        messageSpan.textContent = `: "${message}"`;
+    }
     
     logEntry.appendChild(nameSpan);
     logEntry.appendChild(messageSpan);
@@ -486,138 +1219,224 @@ async function processGroupInteraction(npcIds, location) {
     const hour = gameState.world.time.hour;
     const weather = gameState.world.weather;
 
+    const relationshipLines = npcIds.map(id => {
+        const npc = gameState.npcs[id];
+        ensureFriends(npc);
+        const perNpc = npcIds.filter(otherId => otherId !== id).map(otherId => {
+            const otherName = gameState.npcs[otherId].name;
+            const friend = npc.friends.find(f => f.name.toLowerCase() === otherName.toLowerCase());
+            if (!friend) return `${otherName}: neutral`;
+            const tags = friend.tag && friend.tag.length ? friend.tag.join(', ') : 'neutral';
+            return `${otherName}: mark ${friend.relationshipMark}, tags ${tags}`;
+        }).join(' | ');
+        return `${npc.name} relationships -> ${perNpc}`;
+    }).join('\n');
+
+    const dialogueLineTarget = Math.min(12, npcIds.length * 3);
+    const dialogueLineMin = npcIds.length * 2;
+
     const prompt = `NPCs meeting at ${location}:
 ${npcPersonalities}
 
 Time: ${hour}:00
 Weather: ${weather}
 
-These NPCs encounter each other. Write a brief interaction showing what they do or discuss. If they make plans for later, include it. (2-4 lines of dialogue)
+${getLanguageInstruction()}
+
+No explanations, no translations, no pinyin.
+
+Relationships:
+${relationshipLines}
+
+These NPCs encounter each other. Write a brief interaction showing what they do or discuss. If they make plans for later, include it.
+
+Write ${dialogueLineMin}-${dialogueLineTarget} lines total (about 2-3 lines per person).
 
 Format as:
 [Name]: "dialogue"`;
 
     try {
         const interaction = await callOllamaAPI(prompt);
-        log('interaction', `   💬 At ${location}:`);
+        const locationEmoji = gameState.world.locations[location]?.emoji || '🏛️';
+        log('interaction', `   💬 At ${locationEmoji} ${location}:`);
+        
+        // Create map of NPC names to their actions
+        const npcActionMap = {};
+        npcIds.forEach(npcId => {
+            const npc = gameState.npcs[npcId];
+            const action = npc.currentAction || getActionForLocation(location);
+            const fullName = npc.name;
+            const firstName = npc.name.split(' ')[0];
+            npcActionMap[fullName.toLowerCase()] = action;
+            npcActionMap[firstName.toLowerCase()] = action;
+        });
         
         // Split and display each line with formatted name/message
         const lines = interaction.split('\n').filter(line => line.trim());
+        const relationshipChanges = [];
         lines.forEach(line => {
             const match = line.match(/\[?([^\]:]+)\]?:\s*"?(.+)"?/);
             
             if (match) {
                 const name = match[1].trim();
                 const message = match[2].trim().replace(/^"|"$/g, '');
+                const action = npcActionMap[name.toLowerCase()] || null;
                 
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry log-interaction';
-                logEntry.style.marginLeft = '30px';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'npc-name';
-                nameSpan.textContent = name;
-                
-                const messageSpan = document.createElement('span');
-                messageSpan.className = 'npc-message';
-                messageSpan.textContent = `: "${message}"`;
-                
-                logEntry.appendChild(nameSpan);
-                logEntry.appendChild(messageSpan);
-                
-                document.getElementById('chatLog').appendChild(logEntry);
+                logNPCDialogue(name, message, action, 'interaction');
+
+                // Update relationships based on message sentiment
+                const speakerId = findNpcIdByName(name);
+                if (speakerId) {
+                    const delta = scoreSentiment(message);
+                    npcIds.filter(id => id !== speakerId).forEach(otherId => {
+                        const speaker = gameState.npcs[speakerId];
+                        const other = gameState.npcs[otherId];
+                        const change = delta !== 0 ? delta : 1;
+
+                        updateFriendshipBetween(speakerId, otherId, change);
+                        updateFriendshipBetween(otherId, speakerId, change);
+
+                        if (speaker && other) {
+                            const dir = change > 0 ? '+' : '';
+                            relationshipChanges.push(`${speaker.name} ↔ ${other.name} ${dir}${change}`);
+                        }
+                    });
+                }
             } else {
                 log('interaction', `      ${line}`);
             }
         });
+
+        if (relationshipChanges.length) {
+            const uniqueChanges = Array.from(new Set(relationshipChanges));
+            uniqueChanges.forEach(change => {
+                log('system', `   📌 Relationship update: ${change}`);
+            });
+        }
         
         document.getElementById('chatLog').scrollTop = document.getElementById('chatLog').scrollHeight;
+
+        const groupPlan = detectGroupPlan(interaction, npcIds, location);
+        if (groupPlan) {
+            log('system', `   📌 Plan update: ${groupPlan.summary}`);
+            log('system', `   📌 Group plan: ${groupPlan.summary}`);
+        }
         
-        // Check for plans made in the interaction
-        const changes = [];
-        npcIds.forEach(npcId => {
-            const change = detectScheduleChange(npcId, interaction);
-            if (change) changes.push(change);
-        });
-        
-        return changes;
-        
+        return;
     } catch (error) {
         log('error', `   Failed group interaction at ${location}: ${error.message}`);
-        return [];
+        return;
     }
 }
 
-// NEW: Detect schedule changes from AI output
-function detectScheduleChange(npcId, text) {
-    const npc = gameState.npcs[npcId];
-    
-    // Simple keyword detection (can be enhanced)
-    const keywords = {
-        'later': 'plans something for later',
-        'tonight': 'plans something for tonight',
-        'tomorrow': 'plans something for tomorrow',
-        'meet': 'arranged a meeting',
-        "i'll": 'made a commitment',
-        'going to': 'intends to do something'
+function detectGroupPlan(text, npcIds, currentLocation) {
+    const lower = text.toLowerCase();
+    const target = extractPlannedLocation(lower, npcIds);
+    if (!target) return null;
+
+    const hour = extractPlannedHour(lower);
+    const reason = extractPlanReason(lower);
+
+    npcIds.forEach(npcId => {
+        const npc = gameState.npcs[npcId];
+        if (!npc.forced_plans) npc.forced_plans = [];
+        npc.forced_plans.push({ hour, location: target, reason, members: [...npcIds] });
+    });
+
+    return {
+        location: target,
+        hour,
+        reason,
+        summary: `${npcIds.map(id => gameState.npcs[id].name).join(' & ')} will go to ${target} at ${String(hour).padStart(2, '0')}:00 (${reason})`
     };
-    
-    const lowerText = text.toLowerCase();
-    
-    for (let keyword in keywords) {
-        if (lowerText.includes(keyword)) {
-            return {
-                npc: npc.name,
-                type: keywords[keyword],
-                details: text.substring(0, 100) // First 100 chars
-            };
-        }
+}
+
+function extractPlannedLocation(text, npcIds) {
+    const locationKeys = Object.keys(gameState.world.locations);
+    for (let key of locationKeys) {
+        if (text.includes(key)) return key;
     }
-    
+
+    if (text.includes('tavern')) return 'tavern';
+    if (text.includes('market')) return 'market';
+    if (text.includes('church')) return 'church';
+    if (text.includes('town square') || text.includes('square')) return 'town_square';
+    if (text.includes('home')) {
+        const firstNpc = gameState.npcs[npcIds[0]];
+        return firstNpc.home || currentLocation;
+    }
+
     return null;
 }
 
-// NEW: Narrator describes changes
-function narrateChanges(scheduleChanges) {
-    if (!scheduleChanges || scheduleChanges.length === 0) {
-        log('system', '\n📖 [Narrator]');
-        log('system', '   The hour passes peacefully. Everyone continues their usual routines.');
-        return;
+function extractPlannedHour(text) {
+    const explicitHour = text.match(/\b(\d{1,2})(?:[:.]00)?\b/);
+    if (explicitHour) {
+        const hour = parseInt(explicitHour[1], 10);
+        if (!Number.isNaN(hour) && hour >= 0 && hour <= 23) return hour;
     }
-    
-    log('system', '\n📖 [Narrator - Notable Events]');
-    
-    scheduleChanges.forEach(change => {
-        log('narrator', `   ✦ ${change.npc} ${change.type}`);
-    });
+
+    if (text.includes('next hour') || text.includes('later')) {
+        return (gameState.world.time.hour + 1) % 24;
+    }
+
+    if (text.includes('tonight')) {
+        return 20;
+    }
+
+    return (gameState.world.time.hour + 1) % 24;
+}
+
+function extractPlanReason(text) {
+    if (text.includes('eat') || text.includes('hungry')) return 'hungry';
+    if (text.includes('rest') || text.includes('sleep')) return 'sleepy';
+    if (text.includes('work') || text.includes('job') || text.includes('money')) return 'poor';
+    return 'together';
 }
 
         // Call Ollama API
         async function callOllamaAPI(prompt) {
-            const response = await fetch('http://localhost:11434/api/chat', {
+        console.log('Ollama Prompt:', prompt);
+        const maxAttempts = 3;
+        const timeoutMs = 60000;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+            try {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    model: 'gemma3:4b',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: 'You are an NPC in a town simulation. Respond briefly and stay in character.'
-                        },
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ],
-                    stream: false
-                })
+                credentials: 'same-origin', // ⭐ 關鍵
+                body: JSON.stringify({ prompt }),
+                signal: controller.signal,
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             const data = await response.json();
-            return data.message.content;
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            console.log('Ollama Response:', data.content);
+            return data.content;
+            } catch (error) {
+            console.error(`callOllamaAPI error (attempt ${attempt}/${maxAttempts}):`, error);
+            if (attempt === maxAttempts) {
+                throw new Error(`Failed to fetch (attempt ${attempt}/${maxAttempts}): ${error.message}`);
+            }
+            await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+            } finally {
+            clearTimeout(timeoutId);
+            }
         }
+        }
+
 
         // Advance time
         function advanceTime() {
@@ -626,7 +1445,12 @@ function narrateChanges(scheduleChanges) {
             if (gameState.world.time.hour >= 24) {
                 gameState.world.time.hour = 0;
                 gameState.world.time.day += 1;
-                log('system', `\n🌅 New day begins: Day ${gameState.world.time.day}`);
+                
+                // Random weather for new day
+                const weatherOptions = gameState.world.weather_options || ['sunny', 'cloudy', 'rainy'];
+                gameState.world.weather = weatherOptions[Math.floor(Math.random() * weatherOptions.length)];
+                
+                log('system', `\n🌅 New day begins: Day ${gameState.world.time.day} - Weather: ${gameState.world.weather}`);
             }
         }
 
@@ -651,6 +1475,235 @@ function narrateChanges(scheduleChanges) {
             document.getElementById('weatherDisplay').textContent = weather.charAt(0).toUpperCase() + weather.slice(1);
         }
 
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Step management: 'auto', 'select-character', 'select-place', 'select-action', 'ready'
+        let actionStep = 'auto';
+
+        function updateActionBar() {
+            const info = document.getElementById('actionBarInfo');
+            const backBtn = document.getElementById('backBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const playerRow = document.getElementById('playerEmojiRow');
+            const placeGrid = document.getElementById('placeGrid');
+            const actionGrid = document.getElementById('actionGrid');
+            
+            if (!info) return;
+
+            // Hide all grids by default
+            playerRow.style.display = 'none';
+            placeGrid.style.display = 'none';
+            actionGrid.style.display = 'none';
+            backBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+
+            if (actionStep === 'auto') {
+                info.textContent = 'all npc processing automatically';
+                playerRow.style.display = 'flex';
+                populatePlayerSelector();
+            } else if (actionStep === 'select-place') {
+                const npc = gameState.npcs[playerAction.npcId];
+                info.textContent = `${npc.emoji} ${npc.name} - select place`;
+                backBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                placeGrid.style.display = 'grid';
+                populatePlaceGrid();
+            } else if (actionStep === 'select-action') {
+                const npc = gameState.npcs[playerAction.npcId];
+                const loc = gameState.world.locations[playerAction.location];
+                info.textContent = `${npc.emoji} ${npc.name} - ${loc.emoji} ${playerAction.location.replace('_', ' ')} - select action`;
+                backBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                actionGrid.style.display = 'grid';
+                populateActionGrid();
+            } else if (actionStep === 'ready') {
+                const npc = gameState.npcs[playerAction.npcId];
+                const loc = gameState.world.locations[playerAction.location];
+                info.textContent = `Now You are ${npc.emoji} ${npc.name} - ${loc.emoji} ${playerAction.location.replace('_', ' ')} - ${playerAction.action}`;
+                cancelBtn.style.display = 'inline-block';
+            }
+        }
+
+        function populatePlayerSelector() {
+            const row = document.getElementById('playerEmojiRow');
+            if (!row || !gameState) return;
+            row.innerHTML = '';
+            Object.keys(gameState.npcs).forEach(npcId => {
+                const npc = gameState.npcs[npcId];
+                const emoji = document.createElement('span');
+                emoji.className = 'npc-emoji';
+                emoji.textContent = npc.emoji || '👤';
+                emoji.title = npc.name;
+                emoji.onclick = () => onPlayerSelect(npcId);
+                row.appendChild(emoji);
+            });
+        }
+
+        function populatePlaceGrid() {
+            const grid = document.getElementById('placeGrid');
+            if (!grid || !gameState) return;
+            grid.innerHTML = '';
+            Object.keys(gameState.world.locations).forEach(locId => {
+                const loc = gameState.world.locations[locId];
+                const btn = document.createElement('div');
+                btn.className = 'icon-btn';
+                btn.innerHTML = `<div>${loc.emoji || '🏛️'}</div><div class="icon-btn-label">${locId.replace('_', ' ')}</div>`;
+                btn.onclick = () => onPlaceSelect(locId);
+                grid.appendChild(btn);
+            });
+        }
+
+        function populateActionGrid() {
+            const grid = document.getElementById('actionGrid');
+            if (!grid || !gameState || !playerAction.location) return;
+            grid.innerHTML = '';
+            const location = gameState.world.locations[playerAction.location];
+            if (location && location.actions) {
+                location.actions.forEach(act => {
+                    const btn = document.createElement('div');
+                    btn.className = 'icon-btn';
+                    const actionEmojis = {
+                        'rest': '😴',
+                        'eat': '🍴',
+                        'drink': '🍺',
+                        'work': '🔨',
+                        'shop': '🛒',
+                        'talk': '💬',
+                        'pray': '🙏',
+                        'study': '📚',
+                        'exercise': '💪'
+                    };
+                    btn.innerHTML = `<div>${actionEmojis[act] || '⚡'}</div><div class="icon-btn-label">${act}</div>`;
+                    btn.onclick = () => onActionSelect(act);
+                    grid.appendChild(btn);
+                });
+            }
+        }
+
+        function onPlayerSelect(npcId) {
+            playerAction.npcId = npcId;
+            playerAction.location = null;
+            playerAction.action = null;
+            playerAction.pending = false;
+            actionStep = 'select-place';
+            updateActionBar();
+        }
+
+        function onPlaceSelect(locId) {
+            playerAction.location = locId;
+            playerAction.action = null;
+            actionStep = 'select-action';
+            updateActionBar();
+        }
+
+        function onActionSelect(action) {
+            playerAction.action = action;
+            playerAction.pending = true;
+            actionStep = 'ready';
+            updateActionBar();
+        }
+
+        function handleBack() {
+            if (actionStep === 'select-place') {
+                actionStep = 'auto';
+                playerAction.npcId = null;
+                playerAction.location = null;
+                playerAction.action = null;
+                playerAction.pending = false;
+            } else if (actionStep === 'select-action') {
+                actionStep = 'select-place';
+                playerAction.action = null;
+                playerAction.pending = false;
+            } else if (actionStep === 'ready') {
+                actionStep = 'select-action';
+                playerAction.action = null;
+                playerAction.pending = false;
+            }
+            updateActionBar();
+        }
+
+        function handleCancel() {
+            actionStep = 'auto';
+            playerAction.npcId = null;
+            playerAction.location = null;
+            playerAction.action = null;
+            playerAction.pending = false;
+            updateActionBar();
+        }
+
+        function updateLanguageSelect() {
+            const select = document.getElementById('npcLanguageSelect');
+            if (!select || !gameState) return;
+            select.value = gameState.world.npc_language || 'en';
+        }
+
+        function onLanguageSelect() {
+            const select = document.getElementById('npcLanguageSelect');
+            if (!select || !gameState) return;
+            gameState.world.npc_language = select.value || 'en';
+        }
+
+        function getLanguageInstruction() {
+            const lang = (gameState && gameState.world && gameState.world.npc_language) || 'en';
+            if (lang === 'zh-TW') return 'Respond in Traditional Chinese.';
+            return 'Respond in English.';
+        }
+
+        // Update town view
+        function updateTownView() {
+            if (!gameState) return;
+
+            const container = document.getElementById('townviewLocations');
+            container.innerHTML = '';
+
+            // Group NPCs by location
+            const locationNPCs = {};
+            for (let npcId in gameState.npcs) {
+                const npc = gameState.npcs[npcId];
+                const loc = npc.location;
+                if (!locationNPCs[loc]) {
+                    locationNPCs[loc] = [];
+                }
+                locationNPCs[loc].push(npc);
+            }
+
+            // Create location items
+            for (let locId in gameState.world.locations) {
+                const location = gameState.world.locations[locId];
+                const npcsHere = locationNPCs[locId] || [];
+
+                const locItem = document.createElement('div');
+                locItem.className = 'location-item';
+
+                const emoji = document.createElement('div');
+                emoji.className = 'location-emoji';
+                emoji.textContent = location.emoji || '🏛️';
+
+                const name = document.createElement('div');
+                name.className = 'location-name';
+                name.textContent = locId.replace('_', ' ');
+
+                const npcContainer = document.createElement('div');
+                npcContainer.className = 'location-npcs';
+
+                npcsHere.forEach(npc => {
+                    const npcEmoji = document.createElement('span');
+                    npcEmoji.className = 'npc-emoji';
+                    npcEmoji.textContent = npc.emoji || '👤';
+                    npcEmoji.title = npc.name;
+                    npcContainer.appendChild(npcEmoji);
+                });
+
+                locItem.appendChild(emoji);
+                locItem.appendChild(name);
+                locItem.appendChild(npcContainer);
+                container.appendChild(locItem);
+            }
+        }
+
         // Logging function
         function log(type, message) {
             const chatLog = document.getElementById('chatLog');
@@ -664,6 +1717,35 @@ function narrateChanges(scheduleChanges) {
         // Clear log
         function clearLog() {
             document.getElementById('chatLog').innerHTML = '';
+        }
+
+        // Web App Install Prompt
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            document.getElementById('installBtn').style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
         }
 
         // Auto-initialize on load
