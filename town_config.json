@@ -4,83 +4,112 @@
       "hour": 8,
       "day": 1
     },
+    "townmap": {
+      "width": 8,
+      "height": 8,
+      "tiles": [
+        ["tree", "tree", "tree", "road", "tree", "tree", "tree", "tree"],
+        ["tree", "tree", "house_1", "road", "market", "house_2", "tree", "tree"],
+        ["tree", "tree", "tavern", "road", "road", "church", "tree", "tree"],
+        ["tree", "tree", "road", "road", "town_square", "road", "tree", "tree"],
+        ["tree", "tree", "house_3", "road", "road", "house_4", "tree", "tree"],
+        ["tree", "tree", "tree", "road", "house_5", "tree", "tree", "tree"],
+        ["tree", "tree", "tree", "road", "tree", "tree", "tree", "tree"],
+        ["tree", "tree", "tree", "road", "tree", "tree", "tree", "tree"]
+      ]
+    },
     "weather": "sunny",
     "weather_options": ["sunny", "cloudy", "rainy", "foggy", "windy"],
     "action_effects": {
       "selling": {
         "money": 30,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": -1
       },
       "shopping": {
         "money": -20,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": 1
       },
       "browsing": {
         "money": 0,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": 0
       },
       "eating": {
         "money": -30,
         "food": 50,
-        "rest": 0
+        "rest": 0,
+        "joyful": 2
       },
       "drinking": {
         "money": -25,
         "food": 30,
-        "rest": -5
+        "rest": -5,
+        "joyful": 1
       },
       "gossiping": {
         "money": 0,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": 1
       },
       "praying": {
         "money": 0,
         "food": 0,
-        "rest": 15
+        "rest": 15,
+        "joyful": 1
       },
       "meditating": {
         "money": 0,
         "food": 0,
-        "rest": 20
+        "rest": 20,
+        "joyful": 2
       },
       "worshipping": {
         "money": 0,
         "food": 0,
-        "rest": 15
+        "rest": 15,
+        "joyful": 1
       },
       "resting": {
         "money": 0,
         "food": 0,
-        "rest": 25
+        "rest": 25,
+        "joyful": 1
       },
       "sleeping": {
         "money": 0,
         "food": 0,
-        "rest": 60
+        "rest": 60,
+        "joyful": 2
       },
       "reading": {
         "money": 0,
         "food": 0,
-        "rest": 10
+        "rest": 10,
+        "joyful": 1
       },
       "watching": {
         "money": 0,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": 0
       },
       "talking": {
         "money": 0,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": 1
       },
       "meeting": {
         "money": 0,
         "food": 0,
-        "rest": 0
+        "rest": 0,
+        "joyful": 1
       }
     },
     "locations": {
@@ -140,6 +169,114 @@
       }
     }
   },
+  "eventcards":[
+    {
+      "id": 1,
+      "title": "Market Day Boom",
+      "description": "A surge in trade boosts sales at the market. All selling actions yield double the usual money for the next 3 hours.",
+      "duration_hours": 3,
+      "type":"world",
+      "place": "market",
+      "action": "selling",
+      "effect": {
+        "multiplier": 2
+      },
+      "percentage_chance": 0.03
+    },
+    {
+      "id": 2,
+      "title": "Rainy Day Slowdown",
+      "description": "Inclement weather keeps townsfolk indoors. All shopping actions yield half the usual money for the next 4 hours.",
+      "duration_hours": 4,
+      "type":"world",
+      "place": "market",
+      "action": "shopping",
+      "effect": {
+        "multiplier": 0.5
+      },
+      "percentage_chance": 0.02
+    },
+    {
+      "id": 3,
+      "title": "Baker's Special 🥖",
+      "description": "Martha the Baker has baked a special batch of bread. Anyone eating at the tavern gains an extra 20 food!",
+      "duration_hours": 2,
+      "type":"world",
+      "place": "tavern",
+      "action": "eating",
+      "effect": {
+        "food_bonus": 20
+      },
+      "percentage_chance": 0.025
+    },
+    {
+      "id": 4,
+      "title": "Guard's Patrol Problem 🚨",
+      "description": "Roland the Guard spots troublemakers! All NPCs lose 10 rest from the commotion.",
+      "duration_hours": 1,
+      "type": "world",
+      "place": "town_square",
+      "action": "watching",
+      "effect": {
+        "global": true,
+        "rest": -10
+      },
+      "percentage_chance": 0.015
+    },
+    {
+      "id": 5,
+      "title": "Priest's Blessing 🙏",
+      "description": "Father Benedict performs a blessing! All NPCs at church gain 15 extra rest.",
+      "duration_hours": 3,
+      "type": "world",
+      "place": "church",
+      "action": "praying",
+      "effect": {
+        "rest": 15
+      },
+      "percentage_chance": 0.02
+    },
+    {
+      "id": 6,
+      "title": "Market Shortage 📉",
+      "description": "Merchants report low supply. All shopping actions cost double money!",
+      "duration_hours": 3,
+      "type": "world",
+      "place": "market",
+      "action": "shopping",
+      "effect": {
+        "multiplier": 2
+      },
+      "percentage_chance": 0.02
+    },
+    {
+      "id": 7,
+      "title": "Tavern Fire Alarm! 🔥",
+      "description": "A pot boils over at the tavern! Everyone there loses 5 rest and 10 food.",
+      "duration_hours": 1,
+      "type": "world",
+      "place": "tavern",
+      "action": "eating",
+      "effect": {
+        "rest": -5,
+        "food": -10
+      },
+      "percentage_chance": 0.01
+    },
+    {
+      "id": 8,
+      "title": "Farmer's Harvest Day 🌾",
+      "description": "Tom the Farmer has a successful harvest! All food gained is boosted by 50%.",
+      "duration_hours": 2,
+      "type": "world",
+      "place": "tavern",
+      "action": "eating",
+      "effect": {
+        "multiplier": 1.5
+      },
+      "percentage_chance": 0.03
+    }
+  ],
   "npcs": {
     "baker": {
       "name": "Martha the Baker",

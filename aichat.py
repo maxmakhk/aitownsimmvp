@@ -50,8 +50,8 @@ class LocationEffect:
 
 LOCATIONS: Dict[str, LocationEffect] = {
     "tavern": LocationEffect(name="tavern", money_delta=-50, food_delta=100),
-    "home": LocationEffect(name="home", rest_full=True),
-    "working": LocationEffect(name="working", money_delta=20),
+    "home": LocationEffect(name="home", rest_full=True, food_delta=20),
+    "working": LocationEffect(name="working", money_delta=30),
 }
 
 
@@ -75,8 +75,9 @@ class NPC:
         if hungry_need > 0:
             weights["tavern"] = weights.get("tavern", 0.0) + (hungry_need / 50) * 100
 
-        if hungry_need > 0 and self.abilities.money < 50:
-            weights["working"] = weights.get("working", 0.0) + (hungry_need / 50) * 100
+        money_need = max(0, 50 - self.abilities.money)
+        if money_need > 0 or hungry_need > 0:
+            weights["working"] = weights.get("working", 0.0) + (money_need / 50) * 150
 
         choices = list(weights.keys())
         probs = list(weights.values())

@@ -12,6 +12,8 @@ DEFAULT_SYSTEM = os.environ.get(
     "OLLAMA_SYSTEM",
     "You are an NPC in a town simulation. Respond briefly and stay in character.",
 )
+XAI_API_KEY = os.environ.get("XAI_API_KEY")
+XAI_API_URL = "https://api.x.ai/v1/chat/completions"
 
 app = Flask(__name__)
 CORS(app)
@@ -59,6 +61,41 @@ def chat() -> tuple[dict, int]:
         return {"content": content}, 200
     except requests.RequestException as exc:
         return {"error": str(exc)}, 500
+
+
+@app.post("/api/chat/fallback")
+def chat_fallback() -> tuple[dict, int]:
+    """Fallback to xAI API when Ollama is unavailable"""
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt", "")
+
+    if not prompt:
+        return {"error": "Missing prompt"}, 400
+
+    if not XAI_API_KEY:
+        return {"error": "Missing XAI_API_KEY"}, 500
+
+    try:
+        response = requests.post(
+            XAI_API_URL,
+            headers={
+                "Authorization": f"Bearer {XAI_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "grok-beta",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 60,
+                "temperature": 0.3
+            },
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+        content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        return {"content": content}, 200
+    except requests.RequestException as exc:
+        return {"error": f"xAI API error: {str(exc)}"}, 500
 
 
 if __name__ == "__main__":
